@@ -15,13 +15,13 @@ class SJF
 
     struct comp
     {
-        bool operator()(data1& a, data1& b) 
+        bool operator()(pair<data1, int>& a, pair<data1, int>& b) 
         {
-            return a.BT > b.BT;  
+            return a.first.BT > b.first.BT;  
         }
     };
 
-    priority_queue<data1, vector<data1>, comp> pq;
+    priority_queue<pair<data1, int>, vector<pair<data1, int>>, comp> pq;
 
     static bool cmp(data1 a, data1 b)
     {
@@ -63,19 +63,21 @@ class SJF
 
         void find_CT()
         {
-            pq.push(Data[0]);
+            pq.push({Data[0], 0});
             int index = 1;
             while (!pq.empty())
             {
-                auto task = (pq.top()); pq.pop();
+                auto p = pq.top(); pq.pop();
+                auto task = p.first;
+                int i = p.second;
                 time = max(time, task.AT);
                 time += task.BT;
                 task.CT = time;
-                Data[task.process - 1] = task;
+                Data[i] = task;
 
                 while(index < n && Data[index].AT <= time) 
                 {
-                    pq.push(Data[index]);
+                    pq.push({Data[index], index});
                     index++;
                 }
             }
