@@ -13,9 +13,11 @@ class RoundRobin
     int n;
     int time;
     int time_quantum;
+    double average_WT;
+    double average_TAT;
     vector<data1> Data;
 
-    queue<pair<data1, int>> q;
+    queue<pair<pair<data1, int>, int>> q;
 
     static bool cmp(data1 a, data1 b)
     {
@@ -59,13 +61,14 @@ class RoundRobin
 
         void find_CT()
         {
-            q.push({Data[0], Data[0].BT});
+            q.push({{Data[0], Data[0].BT}, 0});
             int index = 1;
             while (!q.empty())
             {
                 auto p = q.front(); q.pop();
-                auto task = p.first;
-                int BT = p.second;
+                auto task = p.first.first;
+                int BT = p.first.second;
+                int i = p.second;
 
                 time = max(time, task.AT);
 
@@ -75,16 +78,16 @@ class RoundRobin
 
                 while(index < n && Data[index].AT <= time) 
                 {
-                    q.push({Data[index], Data[index].BT});
+                    q.push({{Data[index], Data[index].BT}, index});
                     index++;
                 }
 
                 if(BT == 0)
                 {
                     task.CT = time;
-                    Data[task.process - 1] = task;
+                    Data[i] = task;
                 }
-                else q.push({task, BT});
+                else q.push({{task, BT}, i});
             }
         }
 
@@ -96,7 +99,12 @@ class RoundRobin
             {
                 Data[i].TAT = Data[i].CT - Data[i].AT;
                 Data[i].WT = Data[i].TAT - Data[i].BT;
+                average_TAT += Data[i].TAT;
+                average_WT += Data[i].WT;
             }
+
+            average_TAT /= (double) n;
+            average_WT /= (double) n;
         }
 
         void display()
@@ -106,14 +114,16 @@ class RoundRobin
             cout<<endl;
             for (int i = 0; i < n; i++)
             {
-                cout<<"Process : "<<Data[i].process<<endl;
-                cout<<"Arrival Time : "<<Data[i].AT<<endl;
-                cout<<"Burst Time : "<<Data[i].BT<<endl;
-                cout<<"Completion Time : "<<Data[i].CT<<endl;
-                cout<<"Waiting Time : "<<Data[i].WT<<endl;
-                cout<<"Turn Around Time : "<<Data[i].TAT<<endl;
+                cout<<"Process : "<<Data[i].process<<'\t';
+                cout<<"Arrival Time : "<<Data[i].AT<<'\t';
+                cout<<"Burst Time : "<<Data[i].BT<<'\t';
+                cout<<"Completion Time : "<<Data[i].CT<<'\t';
+                cout<<"Waiting Time : "<<Data[i].WT<<'\t';
+                cout<<"Turn Around Time : "<<Data[i].TAT<<'\t';
                 cout<<endl;
             }
+            cout<<"Average Waiting Time : "<<average_WT<<endl;
+            cout<<"Average Turn Around Time : "<<average_TAT<<endl;
         }
 };
 

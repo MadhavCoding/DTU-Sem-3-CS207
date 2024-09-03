@@ -4,10 +4,10 @@ using namespace std;
 struct data1
 {
     int process;
-    int AT, BT, CT, WT, TAT;
+    int AT, BT, CT, WT, TAT, priority;
 };
 
-class SJF
+class Priority
 {
     int n;
     int time;
@@ -19,7 +19,7 @@ class SJF
     {
         bool operator()(pair<data1, int>& a, pair<data1, int>& b) 
         {
-            return a.first.BT > b.first.BT;  
+            return a.first.priority > b.first.priority;  
         }
     };
 
@@ -37,7 +37,7 @@ class SJF
     }
 
     public: 
-        SJF()
+        Priority()
         {
             time = 0;
         }
@@ -58,6 +58,8 @@ class SJF
                 cin>>Data[i].AT;
                 cout<<"Enter Burst Time : ";
                 cin>>Data[i].BT;
+                cout<<"Enter Priority : ";
+                cin>>Data[i].priority;
             }
 
             sort(Data.begin(), Data.end(), cmp);
@@ -111,6 +113,7 @@ class SJF
                 cout<<"Process : "<<Data[i].process<<'\t';
                 cout<<"Arrival Time : "<<Data[i].AT<<'\t';
                 cout<<"Burst Time : "<<Data[i].BT<<'\t';
+                cout<<"Priority : "<<Data[i].priority<<'\t';
                 cout<<"Completion Time : "<<Data[i].CT<<'\t';
                 cout<<"Waiting Time : "<<Data[i].WT<<'\t';
                 cout<<"Turn Around Time : "<<Data[i].TAT<<'\t';
@@ -123,10 +126,10 @@ class SJF
 
 int main(int argc, char const *argv[])
 {
-    SJF sjf1;
-    sjf1.getnum();
-    sjf1.getdata();
-    sjf1.find_WT_TAT();
-    sjf1.display();
+    Priority priority1;
+    priority1.getnum();
+    priority1.getdata();
+    priority1.find_WT_TAT();
+    priority1.display();
     return 0;
 }

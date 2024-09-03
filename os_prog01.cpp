@@ -11,6 +11,8 @@ class FCFS
 {
     int n;
     int time;
+    double average_WT;
+    double average_TAT;
     vector<data1> Data;
 
     static bool cmp(data1 a, data1 b)
@@ -69,7 +71,12 @@ class FCFS
             {
                 Data[i].TAT = Data[i].CT - Data[i].AT;
                 Data[i].WT = Data[i].TAT - Data[i].BT;
+                average_TAT += Data[i].TAT;
+                average_WT += Data[i].WT;
             }
+
+            average_TAT /= (double) n;
+            average_WT /= (double) n;
         }
 
         void display()
@@ -79,14 +86,16 @@ class FCFS
             cout<<endl;
             for (int i = 0; i < n; i++)
             {
-                cout<<"Process : "<<Data[i].process<<endl;
-                cout<<"Arrival Time : "<<Data[i].AT<<endl;
-                cout<<"Burst Time : "<<Data[i].BT<<endl;
-                cout<<"Completion Time : "<<Data[i].CT<<endl;
-                cout<<"Waiting Time : "<<Data[i].WT<<endl;
-                cout<<"Turn Around Time : "<<Data[i].TAT<<endl;
+                cout<<"Process : "<<Data[i].process<<'\t';
+                cout<<"Arrival Time : "<<Data[i].AT<<'\t';
+                cout<<"Burst Time : "<<Data[i].BT<<'\t';
+                cout<<"Completion Time : "<<Data[i].CT<<'\t';
+                cout<<"Waiting Time : "<<Data[i].WT<<'\t';
+                cout<<"Turn Around Time : "<<Data[i].TAT<<'\t';
                 cout<<endl;
             }
+            cout<<"Average Waiting Time : "<<average_WT<<endl;
+            cout<<"Average Turn Around Time : "<<average_TAT<<endl;
         }
 };
 
