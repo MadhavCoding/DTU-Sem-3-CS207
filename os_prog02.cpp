@@ -19,6 +19,7 @@ class SJF
     {
         bool operator()(pair<data1, int>& a, pair<data1, int>& b) 
         {
+            if(a.first.BT == b.first.BT) return a.first.AT > b.first.AT;
             return a.first.BT > b.first.BT;  
         }
     };
@@ -40,6 +41,7 @@ class SJF
         SJF()
         {
             time = 0;
+            average_TAT = average_WT = 0;
         }
 
         void getnum()

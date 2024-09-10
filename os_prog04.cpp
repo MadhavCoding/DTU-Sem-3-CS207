@@ -11,19 +11,21 @@ class Priority
 {
     int n;
     int time;
+    int time_quantum;
     double average_WT;
     double average_TAT;
     vector<data1> Data;
 
     struct comp
     {
-        bool operator()(pair<data1, int>& a, pair<data1, int>& b) 
+        bool operator()(pair<pair<data1, int>, int>& a, pair<pair<data1, int>, int>& b) 
         {
-            return a.first.priority > b.first.priority;  
+            if(a.first.first.priority == b.first.first.priority) return a.first.first.AT > b.first.first.AT;
+            return a.first.first.priority < b.first.first.priority;  
         }
     };
 
-    priority_queue<pair<data1, int>, vector<pair<data1, int>>, comp> pq;
+    priority_queue<pair<pair<data1, int>, int>, vector<pair<pair<data1, int>, int>>, comp> pq;
 
     static bool cmp(data1 a, data1 b)
     {
@@ -40,6 +42,7 @@ class Priority
         Priority()
         {
             time = 0;
+            average_TAT = average_WT = 0;
         }
 
         void getnum()
@@ -47,6 +50,8 @@ class Priority
             cout<<"Enter no. of Processes : ";
             cin>>n;
             Data.resize(n);
+            cout<<"Enter Time Quantum : ";
+            cin>>time_quantum;
         }
         void getdata()
         {
@@ -67,23 +72,33 @@ class Priority
 
         void find_CT()
         {
-            pq.push({Data[0], 0});
+            pq.push({{Data[0], Data[0].BT}, 0});
             int index = 1;
             while (!pq.empty())
             {
                 auto p = pq.top(); pq.pop();
-                auto task = p.first;
+                auto task = p.first.first;
+                int BT = p.first.second;
                 int i = p.second;
+
                 time = max(time, task.AT);
-                time += task.BT;
-                task.CT = time;
-                Data[i] = task;
+
+                int time_taken = min(time_quantum, BT);
+                BT -= time_taken;
+                time += time_taken;
 
                 while(index < n && Data[index].AT <= time) 
                 {
-                    pq.push({Data[index], index});
+                    pq.push({{Data[index], Data[index].BT}, index});
                     index++;
                 }
+
+                if(BT == 0)
+                {
+                    task.CT = time;
+                    Data[i] = task;
+                }
+                else pq.push({{task, BT}, i});
             }
         }
 

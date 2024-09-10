@@ -34,6 +34,7 @@ class RoundRobin
         RoundRobin()
         {
             time = 0;
+            average_TAT = average_WT = 0;
         }
 
         void getnum()

@@ -30,6 +30,7 @@ class FCFS
         FCFS()
         {
             time = 0;
+            average_TAT = average_WT = 0;
         }
 
         void getnum()
@@ -66,7 +67,7 @@ class FCFS
         void find_WT_TAT()
         {
             find_CT();
-
+            
             for (int i = 0; i < n; i++)
             {
                 Data[i].TAT = Data[i].CT - Data[i].AT;
