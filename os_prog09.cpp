@@ -1,16 +1,26 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-class FIFO
+class LRU
 {
     int page_frame;
     vector<int> slots;
     int page_fault;
-    queue<int> q;
+    vector<int> q;
     int used;
 
+    struct comp
+    {
+        bool operator()(pair<int, pair<int, int>> &a, pair<int, pair<int, int>> &b)
+        {
+            if (a.second.second == b.second.second)
+                return a.second.first > b.second.first;
+            return a.second.second > b.second.second;
+        }
+    };
+
 public:
-    FIFO()
+    LRU()
     {
         page_fault = 0;
         used = 0;
@@ -40,6 +50,12 @@ public:
                 if (slots[i] == x)
                 {
                     found = true;
+
+                    auto it = find(q.begin(), q.end(), x);
+                    if (it != q.end())
+                        q.erase(it);
+                    q.push_back(x);
+
                     break;
                 }
             }
@@ -47,8 +63,7 @@ public:
             if (!found)
             {
                 page_fault++;
-
-                q.push(x);
+                q.push_back(x);
 
                 if (used < page_frame)
                 {
@@ -65,8 +80,8 @@ public:
 
                 else
                 {
-                    int previous = q.front();
-                    q.pop();
+                    int previous = *q.begin();
+                    q.erase(q.begin());
 
                     for (int i = 0; i < page_frame; i++)
                     {
@@ -92,8 +107,8 @@ public:
 
 int main(int argc, char const *argv[])
 {
-    FIFO fifo;
-    fifo.getdata();
-    fifo.input();
+    LRU lru;
+    lru.getdata();
+    lru.input();
     return 0;
 }
