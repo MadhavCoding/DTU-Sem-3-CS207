@@ -9,16 +9,6 @@ class LRU
     vector<int> q;
     int used;
 
-    struct comp
-    {
-        bool operator()(pair<int, pair<int, int>> &a, pair<int, pair<int, int>> &b)
-        {
-            if (a.second.second == b.second.second)
-                return a.second.first > b.second.first;
-            return a.second.second > b.second.second;
-        }
-    };
-
 public:
     LRU()
     {
