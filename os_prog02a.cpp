@@ -1,13 +1,14 @@
 #include <bits/stdc++.h>
+#include <iostream>
 using namespace std;
 
 struct data1
 {
     int process;
-    int AT, BT, CT, WT, TAT, priority;
+    int AT, BT, CT, WT, TAT;
 };
 
-class Priority
+class RoundRobin
 {
     int n;
     int time;
@@ -16,17 +17,7 @@ class Priority
     double average_TAT;
     vector<data1> Data;
 
-    struct comp
-    {
-        bool operator()(pair<pair<data1, int>, int> &a, pair<pair<data1, int>, int> &b)
-        {
-            if (a.first.first.priority == b.first.first.priority)
-                return a.first.first.AT > b.first.first.AT;
-            return a.first.first.priority > b.first.first.priority;
-        }
-    };
-
-    priority_queue<pair<pair<data1, int>, int>, vector<pair<pair<data1, int>, int>>, comp> pq;
+    queue<pair<pair<data1, int>, int>> q;
 
     static bool cmp(data1 a, data1 b)
     {
@@ -39,7 +30,7 @@ class Priority
     }
 
 public:
-    Priority()
+    RoundRobin()
     {
         time = 0;
         average_TAT = average_WT = 0;
@@ -63,8 +54,6 @@ public:
             cin >> Data[i].AT;
             cout << "Enter Burst Time : ";
             cin >> Data[i].BT;
-            cout << "Enter Priority : ";
-            cin >> Data[i].priority;
         }
 
         sort(Data.begin(), Data.end(), cmp);
@@ -72,12 +61,12 @@ public:
 
     void find_CT()
     {
-        pq.push({{Data[0], Data[0].BT}, 0});
+        q.push({{Data[0], Data[0].BT}, 0});
         int index = 1;
-        while (!pq.empty())
+        while (!q.empty())
         {
-            auto p = pq.top();
-            pq.pop();
+            auto p = q.front();
+            q.pop();
             auto task = p.first.first;
             int BT = p.first.second;
             int i = p.second;
@@ -90,7 +79,7 @@ public:
 
             while (index < n && Data[index].AT <= time)
             {
-                pq.push({{Data[index], Data[index].BT}, index});
+                q.push({{Data[index], Data[index].BT}, index});
                 index++;
             }
 
@@ -100,11 +89,11 @@ public:
                 Data[i] = task;
             }
             else
-                pq.push({{task, BT}, i});
+                q.push({{task, BT}, i});
 
-            if (pq.empty() && index < n)
+            if (q.empty() && index < n)
             {
-                pq.push({{Data[index], Data[index].BT}, index});
+                q.push({{Data[index], Data[index].BT}, index});
                 index++;
             }
         }
@@ -131,15 +120,15 @@ public:
         sort(Data.begin(), Data.end(), cmp1);
 
         cout << endl;
+        cout << "Process\tArrival Time\tBurst Time\tCompletion Time\t\tWaiting Time\tTurn Around Time" << endl;
         for (int i = 0; i < n; i++)
         {
-            cout << "Process : " << Data[i].process << '\t';
-            cout << "Arrival Time : " << Data[i].AT << '\t';
-            cout << "Burst Time : " << Data[i].BT << '\t';
-            cout << "Priority : " << Data[i].priority << '\t';
-            cout << "Completion Time : " << Data[i].CT << '\t';
-            cout << "Waiting Time : " << Data[i].WT << '\t';
-            cout << "Turn Around Time : " << Data[i].TAT << '\t';
+            cout << Data[i].process << "\t";
+            cout << Data[i].AT << '\t' << '\t';
+            cout << Data[i].BT << '\t' << '\t';
+            cout << Data[i].CT << '\t' << '\t' << '\t';
+            cout << Data[i].WT << '\t' << '\t';
+            cout << Data[i].TAT << '\t' << '\t';
             cout << endl;
         }
         cout << "Average Waiting Time : " << average_WT << endl;
@@ -149,10 +138,10 @@ public:
 
 int main(int argc, char const *argv[])
 {
-    Priority priority1;
-    priority1.getnum();
-    priority1.getdata();
-    priority1.find_WT_TAT();
-    priority1.display();
+    RoundRobin roundrobin1;
+    roundrobin1.getnum();
+    roundrobin1.getdata();
+    roundrobin1.find_WT_TAT();
+    roundrobin1.display();
     return 0;
 }

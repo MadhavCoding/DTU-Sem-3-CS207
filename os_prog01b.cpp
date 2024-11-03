@@ -7,13 +7,25 @@ struct data1
     int AT, BT, CT, WT, TAT;
 };
 
-class FCFS
+class SJF
 {
     int n;
     int time;
     double average_WT;
     double average_TAT;
     vector<data1> Data;
+
+    struct comp
+    {
+        bool operator()(pair<data1, int> &a, pair<data1, int> &b)
+        {
+            if (a.first.BT == b.first.BT)
+                return a.first.AT > b.first.AT;
+            return a.first.BT > b.first.BT;
+        }
+    };
+
+    priority_queue<pair<data1, int>, vector<pair<data1, int>>, comp> pq;
 
     static bool cmp(data1 a, data1 b)
     {
@@ -26,7 +38,7 @@ class FCFS
     }
 
 public:
-    FCFS()
+    SJF()
     {
         time = 0;
         average_TAT = average_WT = 0;
@@ -55,11 +67,30 @@ public:
 
     void find_CT()
     {
-        for (int i = 0; i < n; i++)
+        pq.push({Data[0], 0});
+        int index = 1;
+        while (!pq.empty())
         {
-            time = max(Data[i].AT, time);
-            time += Data[i].BT;
-            Data[i].CT = time;
+            auto p = pq.top();
+            pq.pop();
+            auto task = p.first;
+            int i = p.second;
+            time = max(time, task.AT);
+            time += task.BT;
+            task.CT = time;
+            Data[i] = task;
+
+            while (index < n && Data[index].AT <= time)
+            {
+                pq.push({Data[index], index});
+                index++;
+            }
+
+            if (pq.empty() && index < n)
+            {
+                pq.push({Data[index], index});
+                index++;
+            }
         }
     }
 
@@ -84,14 +115,15 @@ public:
         sort(Data.begin(), Data.end(), cmp1);
 
         cout << endl;
+        cout << "Process\tArrival Time\tBurst Time\tCompletion Time\t\tWaiting Time\tTurn Around Time" << endl;
         for (int i = 0; i < n; i++)
         {
-            cout << "Process : " << Data[i].process << '\t';
-            cout << "Arrival Time : " << Data[i].AT << '\t';
-            cout << "Burst Time : " << Data[i].BT << '\t';
-            cout << "Completion Time : " << Data[i].CT << '\t';
-            cout << "Waiting Time : " << Data[i].WT << '\t';
-            cout << "Turn Around Time : " << Data[i].TAT << '\t';
+            cout << Data[i].process << "\t";
+            cout << Data[i].AT << '\t' << '\t';
+            cout << Data[i].BT << '\t' << '\t';
+            cout << Data[i].CT << '\t' << '\t' << '\t';
+            cout << Data[i].WT << '\t' << '\t';
+            cout << Data[i].TAT << '\t' << '\t';
             cout << endl;
         }
         cout << "Average Waiting Time : " << average_WT << endl;
@@ -101,10 +133,10 @@ public:
 
 int main(int argc, char const *argv[])
 {
-    FCFS fcfs1;
-    fcfs1.getnum();
-    fcfs1.getdata();
-    fcfs1.find_WT_TAT();
-    fcfs1.display();
+    SJF sjf1;
+    sjf1.getnum();
+    sjf1.getdata();
+    sjf1.find_WT_TAT();
+    sjf1.display();
     return 0;
 }

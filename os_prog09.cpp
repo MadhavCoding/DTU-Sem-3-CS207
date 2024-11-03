@@ -1,104 +1,119 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-class LRU
+class Semaphore
 {
-    int page_frame;
-    vector<int> slots;
-    int page_fault;
-    vector<int> q;
-    int used;
+    int S;
 
 public:
-    LRU()
+    void init(int x)
     {
-        page_fault = 0;
-        used = 0;
+        S = x;
     }
 
-    void getdata()
+    void wait()
     {
-        cout << "Enter the no. of Page Frames : ";
-        cin >> page_frame;
-        slots.resize(page_frame, -1);
+        S--;
     }
 
-    void input()
+    void signal()
     {
-        while (1)
+        S++;
+    }
+
+    int value()
+    {
+        return S;
+    }
+};
+
+class Producer_Consumer
+{
+    int n;
+    Semaphore mutex;
+    Semaphore empty;
+    Semaphore full;
+    queue<int> q;
+
+public:
+    Producer_Consumer()
+    {
+        cout << "Enter size of Buffer : ";
+        cin >> n;
+        mutex.init(1);
+        empty.init(n);
+        full.init(0);
+    }
+
+    void Producer()
+    {
+        if (mutex.value() == 0 || empty.value() == 0)
         {
-            cout << "Enter Page Reference to be accessed (Enter -1 to exit) : ";
-            int x;
-            cin >> x;
-
-            if (x == -1)
-                break;
-
-            bool found = false;
-            for (int i = 0; i < page_frame; i++)
-            {
-                if (slots[i] == x)
-                {
-                    found = true;
-
-                    auto it = find(q.begin(), q.end(), x);
-                    if (it != q.end())
-                        q.erase(it);
-                    q.push_back(x);
-
-                    break;
-                }
-            }
-
-            if (!found)
-            {
-                page_fault++;
-                q.push_back(x);
-
-                if (used < page_frame)
-                {
-                    for (int i = 0; i < page_frame; i++)
-                    {
-                        if (slots[i] == -1)
-                        {
-                            slots[i] = x;
-                            used++;
-                            break;
-                        }
-                    }
-                }
-
-                else
-                {
-                    int previous = *q.begin();
-                    q.erase(q.begin());
-
-                    for (int i = 0; i < page_frame; i++)
-                    {
-                        if (slots[i] == previous)
-                        {
-                            slots[i] = x;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            cout << "Page Fault = " << page_fault << endl;
-            cout << "Page Frames" << endl;
-            for (int i = 0; i < page_frame; i++)
-            {
-                cout << slots[i] << " ";
-            }
-            cout << endl;
+            cout << "Buffer is Full" << endl;
+            return;
         }
+
+        mutex.wait();
+        empty.wait();
+
+        int produced;
+        cout << "Enter Produced Item : ";
+        cin >> produced;
+        q.push(produced);
+        cout << "Item is Produced" << endl;
+
+        mutex.signal();
+        full.signal();
+    }
+
+    void Consumer()
+    {
+        if (full.value() == 0 || mutex.value() == 0)
+        {
+            cout << "Buffer is Empty" << endl;
+            return;
+        }
+
+        full.wait();
+        mutex.wait();
+
+        int x = q.front();
+        q.pop();
+        cout << "Consumed Item : " << x << endl;
+        cout << "Item is Consumed" << endl;
+
+        mutex.signal();
+        empty.signal();
     }
 };
 
 int main(int argc, char const *argv[])
 {
-    LRU lru;
-    lru.getdata();
-    lru.input();
+    Producer_Consumer ps;
+
+    while (true)
+    {
+        cout << "1. Producer \n2. Consumer \n3.Exit" << endl;
+        int choice;
+        cin >> choice;
+
+        if (choice == 1)
+        {
+            ps.Producer();
+        }
+        else if (choice == 2)
+        {
+            ps.Consumer();
+        }
+        else if (choice == 3)
+        {
+            break;
+        }
+        else
+        {
+            cout << "Enter a Valid Input" << endl;
+        }
+    }
+
     return 0;
 }

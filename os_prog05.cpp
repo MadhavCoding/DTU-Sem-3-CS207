@@ -1,193 +1,260 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct memory_block
+class Bankers_Algorithm_Avoidance
 {
-    int ID;
-    int size;
+    vector<int> available;
+    vector<vector<int>> maximum;
+    vector<vector<int>> allocation;
+    vector<vector<int>> need;
 
-    bool operator==(const memory_block &other)
+    int processes, resources;
+
+    void calculate_need()
     {
-        return (ID == other.ID && size == other.size);
-    }
-};
-
-struct data1
-{
-    int process;
-    int AT;
-    int size;
-    memory_block memory_loc;
-};
-
-class memory_allocate
-{
-    int n, m;
-    vector<data1> Data;
-    vector<memory_block> memory;
-
-    static bool cmp(data1 a, data1 b)
-    {
-        return a.AT < b.AT;
-    }
-
-    static bool cmp1(data1 a, data1 b)
-    {
-        return a.process < b.process;
-    }
-
-    static bool cmp2(memory_block m1, memory_block m2)
-    {
-        return m1.size > m2.size;
+        for (int i = 0; i < processes; i++)
+        {
+            for (int j = 0; j < resources; j++)
+            {
+                need[i][j] = maximum[i][j] - allocation[i][j];
+            }
+        }
     }
 
 public:
-    void get_memory()
+    void display_allocation()
     {
-        cout << "Enter no. of memory blocks : ";
-        cin >> m;
-        memory.resize(m);
-
-        for (int i = 0; i < m; i++)
+        cout << "Allocation Matrix" << endl;
+        for (int i = 0; i < processes; i++)
         {
-            memory[i].ID = i + 1;
-            cout << "Enter size of memory block " << i + 1 << " : ";
-            cin >> memory[i].size;
-        }
-    }
-
-    void getnum()
-    {
-        cout << "Enter no. of Processes : ";
-        cin >> n;
-        Data.resize(n);
-    }
-
-    void getdata()
-    {
-        for (int i = 0; i < n; i++)
-        {
-            Data[i].process = i + 1;
-            cout << "Process " << Data[i].process << endl;
-            cout << "Enter Arrival Time : ";
-            cin >> Data[i].AT;
-            cout << "Enter Size : ";
-            cin >> Data[i].size;
-        }
-
-        sort(Data.begin(), Data.end(), cmp);
-    }
-
-    void display()
-    {
-        sort(Data.begin(), Data.end(), cmp1);
-
-        cout << endl;
-        for (int i = 0; i < n; i++)
-        {
-            cout << "Process : " << Data[i].process << '\t';
-            cout << "Arrival Time : " << Data[i].AT << '\t';
-
-            if (Data[i].memory_loc.ID == -1)
+            for (int j = 0; j < resources; j++)
             {
-                cout << "No Memory Allocated" << '\t';
-            }
-            else
-            {
-                cout << "Memory Block ID : " << Data[i].memory_loc.ID << '\t';
-                cout << "Memory Block Size : " << Data[i].memory_loc.size << '\t';
+                cout << allocation[i][j] << " ";
             }
             cout << endl;
         }
     }
 
-    void Worst_Fit()
+    void display_maximum()
     {
-        for (int i = 0; i < n; i++)
-            Data[i].memory_loc.ID = -1;
-
-        vector<memory_block> mem = memory;
-        sort(mem.begin(), mem.end(), cmp2);
-        int index = 0;
-
-        for (int i = 0; i < n && index < m; i++)
+        cout << "Maximum Matrix" << endl;
+        for (int i = 0; i < processes; i++)
         {
-            if (mem[index].size >= Data[i].size)
+            for (int j = 0; j < resources; j++)
             {
-                Data[i].memory_loc = mem[index];
-                index++;
+                cout << maximum[i][j] << " ";
+            }
+            cout << endl;
+        }
+    }
+
+    void display_need()
+    {
+        cout << "Need Matrix" << endl;
+        for (int i = 0; i < processes; i++)
+        {
+            for (int j = 0; j < resources; j++)
+            {
+                cout << need[i][j] << " ";
+            }
+            cout << endl;
+        }
+    }
+
+    void getnum()
+    {
+        cout << "Enter number of processes : ";
+        cin >> processes;
+        cout << "Enter numnber of resources : ";
+        cin >> resources;
+
+        available.resize(resources);
+        maximum.resize(processes, vector<int>(resources));
+        allocation.resize(processes, vector<int>(resources));
+        need.resize(processes, vector<int>(resources));
+    }
+
+    void getdata()
+    {
+        cout << "Enter the available resources for each type" << endl;
+        for (int i = 0; i < resources; i++)
+        {
+            cout << "Resource " << i + 1 << " : ";
+            cin >> available[i];
+        }
+
+        cout << "Enter the maximum demand matrix : " << endl;
+        for (int i = 0; i < processes; i++)
+        {
+            cout << "Process " << i + 1 << " : " << endl;
+            for (int j = 0; j < resources; j++)
+            {
+                cout << "Resource " << j + 1 << " : ";
+                cin >> maximum[i][j];
             }
         }
 
-        cout << "Worst Fit" << endl;
-        display();
-    }
-
-    void Best_Fit()
-    {
-        for (int i = 0; i < n; i++)
-            Data[i].memory_loc.ID = -1;
-
-        vector<memory_block> mem = memory;
-        sort(mem.begin(), mem.end(), cmp2);
-        reverse(mem.begin(), mem.end());
-
-        for (int i = 0; i < n; i++)
+        cout << "Enter the allocation matrix : " << endl;
+        for (int i = 0; i < processes; i++)
         {
-            int low = 0, high = mem.size() - 1;
-            while (low <= high)
+            cout << "Process " << i + 1 << " : " << endl;
+            for (int j = 0; j < resources; j++)
             {
-                int mid = low + (high - low) / 2;
-                if (mem[mid].size >= Data[i].size)
-                    high = mid - 1;
-                else
-                    low = mid + 1;
-            }
-
-            if (low != mem.size())
-            {
-                Data[i].memory_loc = mem[low];
-                mem.erase(find(mem.begin(), mem.end(), mem[low]));
+                cout << "Resource " << j + 1 << " : ";
+                cin >> allocation[i][j];
             }
         }
 
-        cout << "Best Fit" << endl;
-        display();
+        calculate_need();
+
+        display_allocation();
+        display_maximum();
+        display_need();
     }
 
-    void First_Fit()
+    // Check if a process can be safely allocated resources
+    bool can_allocate(int process, vector<int> &work)
     {
-        for (int i = 0; i < n; i++)
-            Data[i].memory_loc.ID = -1;
-
-        vector<memory_block> mem = memory;
-
-        for (int i = 0; i < n; i++)
+        for (int i = 0; i < resources; i++)
         {
-            for (int j = 0; j < mem.size(); j++)
+            if (need[process][i] > work[i])
             {
-                if (mem[j].size >= Data[i].size)
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Function to check if the system is in a safe state
+    bool isSafe()
+    {
+        vector<int> work = available;
+        vector<bool> finish(processes, false);
+        vector<int> safe_sequence;
+
+        for (int count = 0; count < processes; count++)
+        {
+            for (int i = 0; i < processes; i++)
+            {
+                if (!finish[i] && can_allocate(i, work))
                 {
-                    Data[i].memory_loc = mem[j];
-                    mem.erase(find(mem.begin(), mem.end(), mem[j]));
-                    break;
+                    for (int j = 0; j < resources; j++)
+                    {
+                        work[j] += allocation[i][j];
+                    }
+                    safe_sequence.push_back(i + 1);
+                    finish[i] = true;
                 }
             }
         }
 
-        cout << "First Fit" << endl;
-        display();
+        bool found = true;
+        for (int i = 0; i < processes; i++)
+        {
+            if (!finish[i])
+            {
+                found = false;
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            cout << "System is not in a Safe State" << endl;
+            return false;
+        }
+
+        cout << "System is in a Safe State" << endl;
+        cout << "Safe Sequence : ";
+        for (int i = 0; i < safe_sequence.size(); i++)
+        {
+            cout << safe_sequence[i] << " ";
+        }
+        cout << endl;
+        return true;
+    }
+
+    // Request resources for a process
+    bool request_resources(int process, vector<int> request)
+    {
+        for (int i = 0; i < resources; i++)
+        {
+            if (request[i] > need[process][i])
+            {
+                cout << "Error: Process has exceeded its maximum claim" << endl;
+                return false;
+            }
+            if (request[i] > available[i])
+            {
+                cout << "Resources not available" << endl;
+                return false;
+            }
+        }
+
+        // Tentatively allocate the resources
+        for (int i = 0; i < resources; i++)
+        {
+            available[i] -= request[i];
+            allocation[process][i] += request[i];
+            need[process][i] -= request[i];
+        }
+
+        // Check if the system remains in a safe state
+        if (isSafe())
+        {
+            cout << "Resources allocated successfully." << endl;
+
+            display_allocation();
+            display_maximum();
+            display_need();
+
+            return true;
+        }
+        else
+        {
+            // Rollback allocation
+            for (int i = 0; i < resources; i++)
+            {
+                available[i] += request[i];
+                allocation[process][i] -= request[i];
+                need[process][i] += request[i];
+            }
+            cout << "Resources Allocation leads to an Unsafe State." << endl;
+            return false;
+        }
+    }
+
+    void take_request()
+    {
+        int process;
+        vector<int> request(resources);
+        while (true)
+        {
+            cout << "Enter the process number making a request (Enter -1 to exit) : ";
+            cin >> process;
+
+            if (process == -1)
+                break;
+
+            process--;
+            cout << "Enter the resource request for each type : " << endl;
+            for (int i = 0; i < resources; i++)
+            {
+                cout << "Resource " << i + 1 << " : ";
+                cin >> request[i];
+            }
+
+            request_resources(process, request);
+        }
     }
 };
 
 int main(int argc, char const *argv[])
 {
-    memory_allocate Memory;
-    Memory.get_memory();
-    Memory.getnum();
-    Memory.getdata();
-    Memory.Worst_Fit();
-    Memory.Best_Fit();
-    Memory.First_Fit();
+    Bankers_Algorithm_Avoidance ba;
+    ba.getnum();
+    ba.getdata();
+
+    ba.take_request();
     return 0;
 }

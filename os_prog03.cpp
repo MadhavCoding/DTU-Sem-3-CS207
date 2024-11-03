@@ -1,23 +1,30 @@
 #include <bits/stdc++.h>
-#include <iostream>
 using namespace std;
+
+struct memory_block
+{
+    int ID;
+    int size;
+
+    bool operator==(const memory_block &other)
+    {
+        return (ID == other.ID && size == other.size);
+    }
+};
 
 struct data1
 {
     int process;
-    int AT, BT, CT, WT, TAT;
+    int AT;
+    int size;
+    memory_block memory_loc;
 };
 
-class RoundRobin
+class memory_allocate
 {
-    int n;
-    int time;
-    int time_quantum;
-    double average_WT;
-    double average_TAT;
+    int n, m;
     vector<data1> Data;
-
-    queue<pair<pair<data1, int>, int>> q;
+    vector<memory_block> memory;
 
     static bool cmp(data1 a, data1 b)
     {
@@ -29,11 +36,24 @@ class RoundRobin
         return a.process < b.process;
     }
 
-public:
-    RoundRobin()
+    static bool cmp2(memory_block m1, memory_block m2)
     {
-        time = 0;
-        average_TAT = average_WT = 0;
+        return m1.size > m2.size;
+    }
+
+public:
+    void get_memory()
+    {
+        cout << "Enter no. of memory blocks : ";
+        cin >> m;
+        memory.resize(m);
+
+        for (int i = 0; i < m; i++)
+        {
+            memory[i].ID = i + 1;
+            cout << "Enter size of memory block " << i + 1 << " : ";
+            cin >> memory[i].size;
+        }
     }
 
     void getnum()
@@ -41,9 +61,8 @@ public:
         cout << "Enter no. of Processes : ";
         cin >> n;
         Data.resize(n);
-        cout << "Enter Time Quantum : ";
-        cin >> time_quantum;
     }
+
     void getdata()
     {
         for (int i = 0; i < n; i++)
@@ -52,67 +71,11 @@ public:
             cout << "Process " << Data[i].process << endl;
             cout << "Enter Arrival Time : ";
             cin >> Data[i].AT;
-            cout << "Enter Burst Time : ";
-            cin >> Data[i].BT;
+            cout << "Enter Size : ";
+            cin >> Data[i].size;
         }
 
         sort(Data.begin(), Data.end(), cmp);
-    }
-
-    void find_CT()
-    {
-        q.push({{Data[0], Data[0].BT}, 0});
-        int index = 1;
-        while (!q.empty())
-        {
-            auto p = q.front();
-            q.pop();
-            auto task = p.first.first;
-            int BT = p.first.second;
-            int i = p.second;
-
-            time = max(time, task.AT);
-
-            int time_taken = min(time_quantum, BT);
-            BT -= time_taken;
-            time += time_taken;
-
-            while (index < n && Data[index].AT <= time)
-            {
-                q.push({{Data[index], Data[index].BT}, index});
-                index++;
-            }
-
-            if (BT == 0)
-            {
-                task.CT = time;
-                Data[i] = task;
-            }
-            else
-                q.push({{task, BT}, i});
-
-            if (q.empty() && index < n)
-            {
-                q.push({{Data[index], Data[index].BT}, index});
-                index++;
-            }
-        }
-    }
-
-    void find_WT_TAT()
-    {
-        find_CT();
-
-        for (int i = 0; i < n; i++)
-        {
-            Data[i].TAT = Data[i].CT - Data[i].AT;
-            Data[i].WT = Data[i].TAT - Data[i].BT;
-            average_TAT += Data[i].TAT;
-            average_WT += Data[i].WT;
-        }
-
-        average_TAT /= (double)n;
-        average_WT /= (double)n;
     }
 
     void display()
@@ -124,23 +87,107 @@ public:
         {
             cout << "Process : " << Data[i].process << '\t';
             cout << "Arrival Time : " << Data[i].AT << '\t';
-            cout << "Burst Time : " << Data[i].BT << '\t';
-            cout << "Completion Time : " << Data[i].CT << '\t';
-            cout << "Waiting Time : " << Data[i].WT << '\t';
-            cout << "Turn Around Time : " << Data[i].TAT << '\t';
+
+            if (Data[i].memory_loc.ID == -1)
+            {
+                cout << "No Memory Allocated" << '\t';
+            }
+            else
+            {
+                cout << "Memory Block ID : " << Data[i].memory_loc.ID << '\t';
+                cout << "Memory Block Size : " << Data[i].memory_loc.size << '\t';
+            }
             cout << endl;
         }
-        cout << "Average Waiting Time : " << average_WT << endl;
-        cout << "Average Turn Around Time : " << average_TAT << endl;
+    }
+
+    void Worst_Fit()
+    {
+        for (int i = 0; i < n; i++)
+            Data[i].memory_loc.ID = -1;
+
+        vector<memory_block> mem = memory;
+        sort(mem.begin(), mem.end(), cmp2);
+        int index = 0;
+
+        for (int i = 0; i < n && index < m; i++)
+        {
+            if (mem[index].size >= Data[i].size)
+            {
+                Data[i].memory_loc = mem[index];
+                index++;
+            }
+        }
+
+        cout << "Worst Fit" << endl;
+        display();
+    }
+
+    void Best_Fit()
+    {
+        for (int i = 0; i < n; i++)
+            Data[i].memory_loc.ID = -1;
+
+        vector<memory_block> mem = memory;
+        sort(mem.begin(), mem.end(), cmp2);
+        reverse(mem.begin(), mem.end());
+
+        for (int i = 0; i < n; i++)
+        {
+            int low = 0, high = mem.size() - 1;
+            while (low <= high)
+            {
+                int mid = low + (high - low) / 2;
+                if (mem[mid].size >= Data[i].size)
+                    high = mid - 1;
+                else
+                    low = mid + 1;
+            }
+
+            if (low != mem.size())
+            {
+                Data[i].memory_loc = mem[low];
+                mem.erase(find(mem.begin(), mem.end(), mem[low]));
+            }
+        }
+
+        cout << "Best Fit" << endl;
+        display();
+    }
+
+    void First_Fit()
+    {
+        for (int i = 0; i < n; i++)
+            Data[i].memory_loc.ID = -1;
+
+        vector<memory_block> mem = memory;
+
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j < mem.size(); j++)
+            {
+                if (mem[j].size >= Data[i].size)
+                {
+                    Data[i].memory_loc = mem[j];
+                    mem.erase(find(mem.begin(), mem.end(), mem[j]));
+                    break;
+                }
+            }
+        }
+
+        cout << "First Fit" << endl;
+        display();
     }
 };
 
 int main(int argc, char const *argv[])
 {
-    RoundRobin roundrobin1;
-    roundrobin1.getnum();
-    roundrobin1.getdata();
-    roundrobin1.find_WT_TAT();
-    roundrobin1.display();
+    memory_allocate Memory;
+    Memory.get_memory();
+    Memory.getnum();
+    Memory.getdata();
+    Memory.Worst_Fit();
+    Memory.Best_Fit();
+    Memory.First_Fit();
     return 0;
 }
