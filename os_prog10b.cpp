@@ -98,6 +98,8 @@ class SCAN
                     position = tracks[i];
                     sequence.push_back(tracks[i]);
                 }
+
+                avg_seek = total_seek / n;
             }
 
             else
